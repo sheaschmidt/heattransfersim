@@ -1,0 +1,116 @@
+% Problem Statement: Simulate and plot temperatures of a uniform square plate
+% given intial condiditons of interior temperatures and constant heating on
+% one or more edges.
+
+clc
+clf
+clear
+close all
+
+% Initialize Time and Sheet Parameters
+
+tileEdge = 25; % "Physical" or "Real" tile dimensions (animation is interpolated for smoothness)
+edgeDim = 1:tileEdge;
+maxTimeStep = 200; % Arbitrary units
+
+% corellation coefficients for discretized heat equation in 2-Dim
+
+alpha = 2.0;
+deltaX = 1;
+
+deltaT = (deltaX.^2)./(4.*alpha);
+gamma = (alpha .* deltaT)./(deltaX.^2);
+
+% initial internal conditions
+
+tileInt = 0.0; % for constant
+
+% interior value, uncomment this line
+
+%tileSpace = zeros (tileEdge,tileEdge,maxTimeStep) + tileInt;  %
+tileSpace = randi([20 80], [tileEdge tileEdge maxTimeStep] ); % for random
+
+% interior value, uncomment and use this line instead:
+
+% boundary conditions
+
+tileTop = 0.0; % All boundary values stay constant throughout simulation, representing the temperature of contact medium of infinite volume
+
+tileLeft = 0.0;
+
+tileBot = 0.0;
+
+tileRight = 0.0;
+
+for j = 1:tileEdge
+tileSpace (tileEdge, j, :) = tileTop;
+end
+
+for i = 1:tileEdge
+tileSpace(i,1,:) = tileLeft;
+end
+
+for j = 2:tileEdge-1
+tileSpace (1,j, :) = tileBot;
+end
+
+for i = 1:tileEdge
+tileSpace(i,tileEdge,:) = tileRight;
+end
+
+tileSpace = calculate(tileSpace,gamma,deltaX, tileEdge, maxTimeStep);
+% Surface and Interpolation Section
+
+X = 1:tileEdge; % Initialize the surface
+
+Y = 1:tileEdge;
+
+[xq,yq] = meshgrid(1:0.05:tileEdge); %Interpolation mesh resolution param.
+
+Z = tileSpace(X,Y,1);
+
+z1 = griddata(X,Y,Z,xq,yq); % griddata call here interpolates first sheet of tileSpace solution
+
+ser = surf (xq,yq,z1);
+
+ser.EdgeColor = "none";
+
+xlabel ("x")
+
+ylabel ("y")
+
+zlim([0 100])
+
+xlim([0 tileEdge])
+
+ylim([0 tileEdge])
+
+colormap ("jet") % best thermal colormap I found
+
+clim([0 100])
+c = colorbar;
+c.Label.String = "Temperature Scale";
+
+for ii = 1:maxTimeStep
+
+Z = tileSpace (X,Y,ii);
+
+ser.ZData = griddata(X,Y,Z,xq,yq); % griddata call here interpolates discrete values accross entire surface (nth sheet)
+
+title ("Temperature Distribution at t = " + sprintf("%.3f",ii*deltaT) + "units.")
+pause (0.001)
+
+end
+
+function tileSpace = calculate (tileSpace,gamma,deltaX,tileEdge, maxTimeStep) %define timestep state calculation function
+
+for k = 1:maxTimeStep-1 %maxTimeStep
+  for i = 2:deltaX:tileEdge-1 %delta: ileEdge
+    for j = 2:deltaX:tileEdge-1 %deltaX:tileEdge
+tileSpace(i, j, k+1) = gamma * (tileSpace(i+1, j, k) + tileSpace(i-1, j, k) + tileSpace(i, j+1, k) + tileSpace(i, j-1, k) - 4*tileSpace(i, j, k)) + tileSpace (i, j, k);
+    end
+  end
+end
+
+end
+
