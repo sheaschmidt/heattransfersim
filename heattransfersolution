@@ -1,6 +1,5 @@
-% Problem Statement: Simulate and plot temperatures of a uniform square plate
-% given intial condiditons of interior temperatures and constant heating on
-% one or more edges.
+% Problem Statement: Simulate and plot evolution of temperatures of a homogenous 
+% square plate given arbitray initial conditions for interior and edge temperatures.
 
 clc
 clf
@@ -9,38 +8,38 @@ close all
 
 % Initialize Time and Sheet Parameters
 
-tileEdge = 25; % "Physical" or "Real" tile dimensions (animation is interpolated for smoothness)
+tileEdge = 25; %"Real" tile dimensions (animation is interpolated for smoothness)
 edgeDim = 1:tileEdge;
 maxTimeStep = 200; % Arbitrary units
 
-% corellation coefficients for discretized heat equation in 2-Dim
+% Initilize corellation coefficients for discretized heat equation in 2-Dim
 
 alpha = 2.0;
 deltaX = 1;
 
-deltaT = (deltaX.^2)./(4.*alpha);
-gamma = (alpha .* deltaT)./(deltaX.^2);
+% Initialize internal conditions
+% To initilize interior values to be uniform, uncomment these two lines and comment line 28
 
-% initial internal conditions
+%tileInt = 0.0;
+%tileSpace = zeros (tileEdge,tileEdge,maxTimeStep) + tileInt;
 
-tileInt = 0.0; % for constant
+% To initilize interior values randomly, uncomment this line and comment lines 23-24
 
-% interior value, uncomment this line
-
-%tileSpace = zeros (tileEdge,tileEdge,maxTimeStep) + tileInt;  %
 tileSpace = randi([20 80], [tileEdge tileEdge maxTimeStep] ); % for random
 
-% interior value, uncomment and use this line instead:
+% Initilie boundary temperature conditions in these lines
+% (All boundary values stay constant throughout simulation, representing the 
+% temperature of contact medium of infinite volume)
 
-% boundary conditions
-
-tileTop = 0.0; % All boundary values stay constant throughout simulation, representing the temperature of contact medium of infinite volume
-
+tileTop = 0.0; 
 tileLeft = 0.0;
-
 tileBot = 0.0;
-
 tileRight = 0.0;
+
+% Program Start
+
+deltaT = (deltaX.^2)./(4.*alpha);
+gamma = (alpha .* deltaT)./(deltaX.^2);
 
 for j = 1:tileEdge
 tileSpace (tileEdge, j, :) = tileTop;
